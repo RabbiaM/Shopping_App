@@ -1,35 +1,46 @@
 
 import 'package:bloc/bloc.dart';
+import 'package:rxdart/rxdart.dart';
 import '../model/Items.dart';
 
 class InitialCubit extends Cubit<int>{
-  final List<Items> items=[];
-  final List<Items> cartItems=[];
+
+  final BehaviorSubject<List<Items>> items$= BehaviorSubject <List<Items>>();
+  final BehaviorSubject<List<Items>> cartItems$=BehaviorSubject <List<Items>>();
   InitialCubit():super(0){
     initialize();
   }
 
   void initialize() {
-    items.add(Items(name:'Apple', price:10.0));
-    items.add(Items(name:'Banana', price:20.0));
-    items.add(Items(name:'Mango', price:35.0));
-    items.add(Items(name:'Orange', price:33.0));
-    items.add(Items(name:'Strawberry', price:34.0));
-    items.add(Items(name:'Peach', price:24.0));
-    items.add(Items(name:'Guava', price:90.0));
-    items.add(Items(name:'Pomegranate', price:33.0));
+    final List<Items> value=[];
+    value.add(Items(name: 'Banana', price: 20.0));
+    value.add(Items(name: 'Mango', price: 30.0));
+    value.add(Items(name: 'Orange', price: 50.0));
+    value.add(Items(name: 'Strawberry', price: 60.0));
+    value.add(Items(name: 'Peach', price: 10.0));
+    value.add(Items(name: 'Pomegranate', price: 10.0));
+    items$.add(value);
   }
 
   void addtoCart(Items item){
-  cartItems.add(item);
-  items.remove(item);
-  emit(state+1);
+    final items=items$.valueOrNull ?? [];
+    final cart=cartItems$.valueOrNull??[];
+    cart.add(item);
+    items.remove(item);
+    items$.add(items);
+    cartItems$.add(cart);
+    emit(state+1);
   }
 
-  void removeFromCart(Items item){
-    cartItems.remove(item);
-    items.add(item);
-    emit(state-1);
+   void removeFromCart(Items item){
+     final items=items$.valueOrNull ?? [];
+     final cart=cartItems$.valueOrNull??[];
+     items.add(item);
+     items$.add(items);
+     cart.remove(item);
+     cartItems$.add(cart);
+      emit(state-1);
   }
+
 
 }
