@@ -2,56 +2,49 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:badges/badges.dart' as badges;
+import 'package:go_router/go_router.dart';
+import 'package:mini_app/model/Items.dart';
 import '../Cubits/initial_cubit.dart';
 
 class CartScreen extends StatelessWidget{
+
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<InitialCubit>();
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.yellow[100],
         appBar: AppBar(
           title: const Text('Cart'),
-          actions: [
-            BlocConsumer<InitialCubit,int>(
-                listener: (context,state){},
-                builder: (context,state) {
-                  return  Padding(
-                    padding: const EdgeInsets.only(right: 15.0,top: 15.0),
-                    child: badges.Badge(
-                          position: badges.BadgePosition.bottomEnd(bottom: 4,end: -9),
-                          badgeContent: Text(state.toString()),
-                          child: Icon(Icons.shopping_cart),
-                        ),
-                  );
-                }
-            )
-            //Icon(Icons.shopping_cart);
-          ],
         ),
-        body: BlocConsumer<InitialCubit, int>(
-          listener: (context, state) {},
-          builder: (context, state) {
-            final cubit = context.read<InitialCubit>();
-            return ListView.builder(
-              itemCount: cubit.cartItems.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(cubit.cartItems[index].name,style: TextStyle(fontWeight: FontWeight.bold),),
-                  subtitle: Text(cubit.cartItems[index].price.toString()),
-                  trailing: ElevatedButton(
-                    onPressed: () {
-                      cubit.removeFromCart(cubit.cartItems[index]);
-                    },
-                    child: Text('Remove Item'),
+        body: StreamBuilder<List<Items>>(
+            stream: cubit.cartItems$.stream,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return Center(
+                child: CircularProgressIndicator(),
+              );
+              return ListView.builder(
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context,index){
+                    final elements=snapshot.data![index];
+                    return ListTile(
+                      title: Text(elements.name),
+                      subtitle: Text(elements.price.toString()),
+                      trailing: ElevatedButton(
+                        onPressed: () {
+                          cubit.removeFromCart(elements);
+                        },
+                        child: Text('Remove item'),
+                      ),
+                    );
+                  }
+                  );
+            }
+        ),
                   ),
                 );
-              },
-            );
-          },
-        ),
-      ),
-    );
+
   }
 
 }
